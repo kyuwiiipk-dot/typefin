@@ -2,9 +2,16 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Shaking Tokyo — Cards</title>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+
+  <!-- 첫 화면에서 필요한 이미지 선로딩 (깜빡임 감소) -->
+  <link rel="preload" as="image" href="shakingtokyo-icon.png">
+  <link rel="preload" as="image" href="pizza-a.png">
+  <link rel="preload" as="image" href="pizza-s.png">
+  <link rel="preload" as="image" href="pizza-l.png">
+
   <style>
     :root{
       --red:#ab1e22;
@@ -15,49 +22,54 @@
     }
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{margin:0;background:#000;color:#fff;font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    body{
+      margin:0;background:#000;color:#fff;
+      font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    }
+    /* 오버레이 열릴 때 스크롤 잠금 */
+    body.overlay-open{overflow:hidden}
 
     /* Splash */
-    #splash{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:1000;transition:opacity .5s ease}
-    #splash img{width:min(42vw,240px);height:auto;cursor:pointer;transition:transform .25s}
-    #splash img:hover{transform:scale(1.04)}
+    #splash{
+      position:fixed;inset:0;background:#000;
+      display:flex;align-items:center;justify-content:center;
+      z-index:1000;transition:opacity .5s ease;
+    }
+    #splash img{width:min(60vw,380px);height:auto;cursor:pointer;transition:transform .3s ease}
+    #splash img:hover{transform:scale(1.08)}
     #splash.fade{opacity:0;pointer-events:none}
 
     /* Appbar */
-    header.appbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);border-bottom:1px solid var(--bd)}
-    #title{margin:0;font-size:1.45rem;color:var(--red);font-family:"IBM Plex Mono",monospace;font-weight:700;text-transform:lowercase;text-shadow:0 4px 8px rgba(171,30,34,.35);user-select:none}
-    #title .ch{display:inline-block;transform-origin:center bottom}
-    @keyframes shakeLetterVerticalSlow{
-      0%,100%{transform:translateY(0) rotate(0deg)}
-      10%{transform:translateY(-3px) rotate(-2deg)}
-      20%{transform:translateY(3px) rotate(2deg)}
-      30%{transform:translateY(-2px) rotate(-1.5deg)}
-      40%{transform:translateY(2px) rotate(1.5deg)}
-      50%{transform:translateY(-1.5px) rotate(-1deg)}
-      60%{transform:translateY(1.5px) rotate(1deg)}
-      70%{transform:translateY(-1px) rotate(-.8deg)}
-      80%{transform:translateY(1px) rotate(.8deg)}
-      90%{transform:translateY(0) rotate(.3deg)}
+    header.appbar{
+      position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
+      padding:10px 16px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);
+      border-bottom:1px solid var(--bd)
     }
-    #title.wobble .ch{animation:shakeLetterVerticalSlow 3.8s ease-in-out infinite;animation-delay:calc(var(--i)*80ms)}
+    #title{
+      margin:0;font-size:1.05rem; /* 작게 */
+      color:var(--red);font-family:"IBM Plex Mono",monospace;font-weight:700;text-transform:lowercase;
+      text-shadow:0 2px 6px rgba(171,30,34,.35);user-select:none
+    }
+    #title .ch{display:inline-block;transform-origin:center bottom}
+    @keyframes shakeLetter{0%,100%{transform:translateY(0)}20%{transform:translateY(-1.5px)}40%{transform:translateY(1.5px)}60%{transform:translateY(-1px)}80%{transform:translateY(1px)}}
+    #title.wobble .ch{animation:shakeLetter 3s ease-in-out infinite;animation-delay:calc(var(--i)*60ms)}
     .spacer{flex:1}
-    .btn{border:1px solid var(--bd);background:transparent;color:#fff;border-radius:999px;padding:8px 12px;font-size:.9rem;cursor:pointer;transition:.2s}
-    .btn:hover{background:rgba(255,255,255,.10);transform:translateY(-1px)}
+    .btn{border:1px solid var(--bd);background:transparent;color:#fff;border-radius:999px;padding:6px 10px;font-size:.85rem;cursor:pointer;transition:.2s}
+    .btn:hover{background:rgba(255,255,255,.10)}
     .btn.is-on{background:rgba(171,30,34,.35);border-color:var(--red)}
-
     main{max-width:1080px;margin:0 auto;padding:16px}
 
     /* Tabs */
-    .tabs{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-    .tab{border:1px solid var(--bd);background:#0e0e0e;color:#eee;padding:10px 0;border-radius:12px;cursor:pointer;transition:.18s;font-weight:600}
+    .tabs{margin-top:10px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .tab{border:1px solid var(--bd);background:#0e0e0e;color:#eee;padding:8px 0;border-radius:10px;cursor:pointer;transition:.18s;font-weight:600;font-size:.95rem}
     .tab.active{background:var(--red);border-color:var(--red)}
-    .tab:hover{filter:brightness(1.15)}
-    .panel{display:none;margin-top:14px}
+    .tab:hover{filter:brightness(1.1)}
+    .panel{display:none;margin-top:16px}
     .panel.active{display:block}
 
     /* Scenes */
     .video-wrap{margin-bottom:14px}
-    .video-wrap video{width:100%;display:block;border-radius:14px;border:1px solid var(--bd);box-shadow:var(--shadow);background:#000}
+    video{width:100%;display:block;border-radius:12px;border:1px solid var(--bd);box-shadow:var(--shadow);background:#000}
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
     @media (max-width:960px){.grid{grid-template-columns:repeat(2,1fr)}}
     @media (max-width:560px){.grid{grid-template-columns:1fr}}
@@ -78,56 +90,60 @@
     .line-body .langs{margin-top:8px;display:flex;flex-direction:column;gap:6px}
     .tag{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);font-size:.68rem;font-weight:700;margin-right:6px}
     .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-    @media (max-width:720px){
-      .line-card{grid-template-columns:1fr}
-    }
+    @media (max-width:720px){.line-card{grid-template-columns:1fr}}
 
     /* About */
     .about .block{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
     .about hr{border:none;height:1px;background:var(--bd);margin:12px 0}
 
-    /* Pizza chooser overlay */
+    /* Pizza chooser (큰 박스, 작은 타일) */
     #box{
-      position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
-      display:flex;align-items:center;justify-content:center;z-index:900;
-      opacity:0;pointer-events:none;transition:opacity .6s ease;
+      position:fixed;inset:0;background:rgba(0,0,0,.95); /* 더 불투명 */
+      backdrop-filter:blur(6px);
+      display:flex;align-items:center;justify-content:center;
+      z-index:950; /* 스플래시(1000) 바로 아래 */
+      opacity:0;pointer-events:none;transition:opacity .45s ease;
     }
     #box.open{opacity:1;pointer-events:auto}
+    /* 첫 오픈 즉시 보이도록 전환 제거 */
+    #box.immediate{transition:none}
     .box-inner{
-      background:#0d0d0d;border:1px solid var(--bd);border-radius:18px;box-shadow:var(--shadow);
-      width:min(1000px,96vw);padding:20px;
-      transform-origin:top center;transform:scale(.8) rotateX(90deg);
-      opacity:0;transition:transform .8s cubic-bezier(.23,1,.32,1), opacity .6s ease;
+      background:#111;border:1px solid var(--bd);border-radius:20px;box-shadow:var(--shadow);
+      width:min(1200px,96vw);padding:32px;transform:scale(1.02);
+      transition:transform .6s cubic-bezier(.23,1,.32,1);
     }
-    #box.open .box-inner{transform:scale(1) rotateX(0);opacity:1}
-    .box-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-    .box-head h2{margin:0;font-size:1.1rem}
-    .shake-title{animation:boxShake 1.5s ease forwards;transform-origin:center;display:inline-block}
-    @keyframes boxShake{
-      0%{transform:scale(.9) rotate(0deg);opacity:0}
-      20%{transform:scale(1.05) rotate(2deg);opacity:1}
-      40%{transform:scale(1) rotate(-2deg)}
-      60%{transform:scale(1.03) rotate(1deg)}
-      80%{transform:scale(1) rotate(0deg)}
-      100%{transform:scale(1);opacity:1}
+    #box.immediate .box-inner{transition:none}
+    .box-head{display:flex;justify-content:center;margin-bottom:20px}
+    .box-head h2{font-size:1.5rem;text-align:center}
+    .pizza-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:14px;justify-items:center}
+    .pizza{
+      background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;width:140px;
+      transition:.18s;text-align:center;cursor:pointer
     }
-    .pizza-grid{display:grid;grid-template-columns:repeat(3, minmax(260px, 1fr));gap:16px}
-    @media (max-width:760px){.pizza-grid{grid-template-columns:1fr}}
-    .pizza{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;cursor:pointer;transition:.18s;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;text-align:center}
-    .pizza:hover{background:var(--card2);transform:translateY(-1px)}
-    .pizza .name{font-weight:700}
-    .pizza-img{width:100%;aspect-ratio:1/1;object-fit:contain;background:transparent;border-radius:12px;display:block}
-    .box-foot{display:flex;justify-content:flex-end;margin-top:12px}
+    .pizza:hover{transform:translateY(-1px);background:var(--card2)}
+    .pizza-img{width:100%;aspect-ratio:1/1;object-fit:contain}
 
-    /* Reopen (←) button */
+    /* Reopen */
     #reopenBtn{
-      position:fixed;left:16px;bottom:16px;z-index:850;
-      width:46px;height:46px;border-radius:50%;
-      display:none;align-items:center;justify-content:center;
-      border:1px solid var(--bd);background:rgba(0,0,0,.6);backdrop-filter:blur(6px);
-      color:#fff;font-size:20px;cursor:pointer;transition:transform .15s ease, background .2s ease;
+      position:fixed;left:16px;bottom:16px;z-index:900;width:46px;height:46px;border-radius:50%;
+      display:none;align-items:center;justify-content:center;border:1px solid var(--bd);
+      background:rgba(0,0,0,.6);color:#fff;font-size:20px;cursor:pointer}
+    #reopenBtn:hover{background:rgba(255,255,255,.08)}
+
+    /* 반응형 */
+    @media (max-width: 900px) {
+      body { font-size: 15px; padding: 0 16px; }
+      img, video { max-width: 100%; height: auto; }
+      #title { font-size:.95rem; }
+      .pizza{width:120px;padding:8px}
+      .box-inner{width:94vw}
     }
-    #reopenBtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.08)}
+    @media (max-width: 600px) {
+      h1 { font-size: 1.3rem; }
+      p { font-size: 1rem; }
+      .pizza{width:100px;padding:6px}
+      .box-inner{padding:24px}
+    }
   </style>
 </head>
 <body>
@@ -144,35 +160,23 @@
     </header>
 
     <main>
-      <!-- tabs: About first -->
       <nav class="tabs" role="tablist" aria-label="Main menu">
         <button class="tab active" data-tab="about" role="tab" aria-selected="true">About</button>
         <button class="tab" data-tab="scenes" role="tab" aria-selected="false">Scenes</button>
         <button class="tab" data-tab="lines" role="tab" aria-selected="false">Lines</button>
       </nav>
 
-      <!-- About (initial) -->
+      <!-- About -->
       <section id="about" class="panel about active" role="tabpanel">
         <div class="block">
-          <p><strong>한국어</strong></p>
-          <p>이 도시는 멈춘 듯이 흔들린다.<br>
-          10년 동안 문 밖을 나가지 않았다. 피자 박스를 탑처럼 쌓고, 전화기 너머의 목소리로 세상을 대신했다.<br>
-          매주 같은 피자, 같은 토요일, 같은 침묵.<br>
-          그러나 어느 날, 배달원과 눈이 마주쳤다. 그리고 세상은 미세하게 흔들렸다.<br>
-          작은 진동이 집을, 마음을, 시간을 흔든다. 문 밖은 여전히 낯설지만, 그는 걸음을 내딛는다.<br>
-          누군가 그의 고요 속으로 들어왔기 때문이다.</p>
+          <p><strong>🇺🇸 English</strong></p>
+          <p>The city trembles as if it has stopped. For ten years, he never stepped outside. Pizza boxes rose like towers, and voices on the phone replaced the world. Every Saturday repeated the same silence. One day, his eyes met the delivery girl’s— and the world shook, just slightly. The vibration reached his heart, unsettling the dust of years. The outside is still unfamiliar, but he begins to walk, because someone has entered his silence.</p>
           <hr>
-          <p><strong>English</strong></p>
-          <p>The city trembles as if it has stopped.<br>
-          For ten years, he never stepped outside. Pizza boxes rose like towers, and voices on the phone replaced the world.<br>
-          Every Saturday repeated the same silence. One day, his eyes met the delivery girl’s—and the world shook, just slightly.<br>
-          The vibration reached his heart, unsettling the dust of years. The outside is still unfamiliar, but he begins to walk,<br>
-          because someone has entered his silence.</p>
+          <p><strong>🇰🇷 한국어</strong></p>
+          <p>이 도시는 멈춘 듯이 흔들린다. 10년 동안 문 밖을 나가지 않았다. 피자 박스를 탑처럼 쌓고, 전화기 너머의 목소리로 세상을 대신했다. 매주 같은 피자, 같은 토요일, 같은 침묵. 어느 날, 배달원과 눈이 마주치고, 세상은 아주 미세하게 흔들렸다. 작은 진동이 마음의 먼지를 털어낸다. 바깥은 여전히 낯설지만, 그는 걸음을 내딛는다. 누군가 그의 침묵 속으로 들어왔기 때문이다.</p>
           <hr>
-          <p><strong>日本語</strong></p>
-          <p>この街は、止まったまま震えている。十年間、外に出ることはなかった。ピザの箱を積み上げ、電話の向こうの声だけが世界だった。<br>
-          ある日、配達員と目が合い、世界はかすかに揺れた。その小さな震えが、部屋も心も時間も揺らす。<br>
-          外はまだ怖い。それでも彼は歩き出す。誰かが彼の沈黙に入ってきたから。</p>
+          <p><strong>🇯🇵 日本語</strong></p>
+          <p>この街は止まったまま、かすかに震えている。十年間、外に出ることはなかった。ピザの箱は塔のように積み上がり、受話器の向こうの声だけが世界だった。毎週土曜日、同じ静けさが繰り返される。ある日、配達員と目が合い、世界はわずかに揺れた。その小さな震えが、心に積もった埃を揺らす。外はまだ怖い。それでも彼は歩き出す。誰かが彼の沈黙に入ってきたからだ。</p>
         </div>
       </section>
 
@@ -199,32 +203,20 @@
     </main>
   </div>
 
-  <!-- Pizza chooser (ORDER: About → Scenes → Lines) -->
+  <!-- Pizza chooser -->
   <div id="box" aria-hidden="true">
     <div class="box-inner" role="dialog" aria-modal="true" aria-labelledby="boxTitle">
-      <div class="box-head">
-        <h2 id="boxTitle" class="shake-title">The box is open. Pick one to begin!</h2>
-        <div class="spacer"></div>
-        <button id="boxClose" class="btn">Close</button>
-      </div>
+      <div class="box-head"><h2 id="boxTitle">The box is open. Pick one to begin!</h2></div>
       <div class="pizza-grid">
         <div class="pizza" data-go="about" tabindex="0" role="button" aria-label="About">
-          <img class="pizza-img" src="pizza-a.png" alt="About Pizza">
-          <div class="name">About</div>
+          <img class="pizza-img" src="pizza-a.png" alt="About Pizza"><div class="name">About</div>
         </div>
         <div class="pizza" data-go="scenes" tabindex="0" role="button" aria-label="Scenes">
-          <img class="pizza-img" src="pizza-s.png" alt="Scenes Pizza">
-          <div class="name">Scenes</div>
+          <img class="pizza-img" src="pizza-s.png" alt="Scenes Pizza"><div class="name">Scenes</div>
         </div>
         <div class="pizza" data-go="lines" tabindex="0" role="button" aria-label="Lines">
-          <img class="pizza-img" src="pizza-l.png" alt="Lines Pizza">
-          <div class="name">Lines</div>
+          <img class="pizza-img" src="pizza-l.png" alt="Lines Pizza"><div class="name">Lines</div>
         </div>
-      </div>
-      <div class="box-foot">
-        <label style="display:flex;align-items:center;gap:8px;opacity:.9">
-          <input id="remember" type="checkbox"> Don’t show this again
-        </label>
       </div>
     </div>
   </div>
@@ -233,62 +225,58 @@
   <button id="reopenBtn" title="Choose again" aria-label="Choose again (open pizza box)">←</button>
 
   <script>
-    /* ---------- Splash → App ---------- */
-    const splash=document.getElementById('splash');
-    const app=document.getElementById('app');
-    const reopenBtn=document.getElementById('reopenBtn');
-    document.getElementById('start').addEventListener('click',()=>{
-      splash.classList.add('fade');
-      setTimeout(()=>{ splash.remove(); app.style.display='block'; reopenBtn.style.display='flex'; openBoxIfNeeded(); },500);
-    });
-
-    /* ---------- Title wobble ---------- */
+    /* ---------- Title wobble (per-letter, preserves space) ---------- */
     const title=document.getElementById('title');
     title.innerHTML=[...title.textContent].map((ch,i)=>`<span class="ch" style="--i:${i}">${ch===' ' ? '&nbsp;' : ch}</span>`).join('');
     title.classList.add('wobble');
 
     /* ---------- Data ---------- */
-    const scenes = [
+    const scenesData = [
       {id:'hikikomori', img:'scene-hikikomori.png', ko:'나는 히키코모리다.', en:'I am a hikikomori.', ja:'私は引きこもりです。'},
-      {id:'tenyears', img:'scene-10years.png', ko:'이것이 사라지기 전까지 10년.', en:'Ten years until this disappears.', ja:'これが消えるまでの10年。'},
-      {id:'pizza', img:'scene-pizza.png', ko:'매주 토요일에는 피자를 먹는다.', en:'Every Saturday, I eat pizza.', ja:'毎週土曜日はピザを食べる。'},
-      {id:'objects', img:'scene-objects.png', ko:'사물이 사람을 대체한다.', en:'Objects replace people.', ja:'物が人を置き換える。'},
-      {id:'eyes', img:'scene-eyes.png', ko:'11년 만에 눈이 마주쳤다.', en:'Our eyes met for the first time in eleven years.', ja:'11年ぶりに目が合った。'},
-      {id:'sorry', img:'scene-sorry.png', ko:'죄송합니다 실수로 잘못 눌렀어요.', en:'Sorry, I pressed it by mistake.', ja:'すみません、間違えて押しました。'},
-      {id:'meet', img:'scene-meet.png', ko:'히키코모리가 히키코모리를 만난다.', en:'A hikikomori meets another hikikomori.', ja:'引きこもりが引きこもりに出会う。'}
+      {id:'tenyears',   img:'scene-10years.png',   ko:'이것이 사라지기 전까지 10년.', en:'Ten years until this disappears.', ja:'これが消えるまでの10年。'},
+      {id:'pizza',      img:'scene-pizza.png',     ko:'매주 토요일에는 피자를 먹는다.', en:'Every Saturday, I eat pizza.', ja:'毎週土曜日はピザを食べる。'},
+      {id:'objects',    img:'scene-objects.png',   ko:'사물이 사람을 대체한다.', en:'Objects replace people.', ja:'物が人を置き換える。'},
+      {id:'eyes',       img:'scene-eyes.png',      ko:'11년 만에 눈이 마주쳤다.', en:'Our eyes met for the first time in eleven years.', ja:'11年ぶりに目が合った。'},
+      {id:'sorry',      img:'scene-sorry.png',     ko:'죄송합니다 실수로 잘못 눌렀어요.', en:'Sorry, I pressed it by mistake.', ja:'すみません、間違えて押しました。'},
+      {id:'meet',       img:'scene-meet.png',      ko:'히키코모리가 히키코모리를 만난다.', en:'A hikikomori meets another hikikomori.', ja:'引きこもりが引きこもりに出会う。'}
     ];
 
-    /* ---------- Build Scenes grid ---------- */
+    /* ---------- Build Scenes & Lines ---------- */
     const grid=document.getElementById('grid');
-    grid.innerHTML=scenes.map(s=>`
-      <article class="card" data-id="${s.id}">
-        <img src="${s.img}" alt="${s.ko}">
-        <div class="meta">
-          <h3 class="title">${s.ko}</h3>
-          <p class="langline"><span class="tag">EN</span>${s.en}</p>
-          <p class="langline"><span class="tag">JP</span>${s.ja}</p>
-        </div>
-      </article>`).join('');
-
-    /* ---------- Build Lines list ---------- */
     const linesList=document.getElementById('linesList');
-    linesList.innerHTML=scenes.map(s=>`
-      <article class="line-card" data-id="${s.id}">
-        <img src="${s.img}" alt="${s.ko}">
-        <div class="line-body">
-          <div class="row1"><span class="name">${s.ko}</span></div>
-          <div class="langs">
-            <div><span class="tag">KO</span>${s.ko}</div>
-            <div><span class="tag">EN</span>${s.en}</div>
-            <div><span class="tag">JP</span>${s.ja}</div>
+
+    function renderScenes(){
+      grid.innerHTML=scenesData.map(s=>`
+        <article class="card" data-id="${s.id}">
+          <img src="${s.img}" alt="${s.ko}">
+          <div class="meta">
+            <h3 class="title">${s.ko}</h3>
+            <p class="langline"><span class="tag">EN</span>${s.en}</p>
+            <p class="langline"><span class="tag">JP</span>${s.ja}</p>
           </div>
-          <div class="actions">
-            <button class="btn speak" data-lang="ko">Speak KO</button>
-            <button class="btn speak" data-lang="en">Speak EN</button>
-            <button class="btn speak" data-lang="ja">Speak JP</button>
+        </article>`).join('');
+    }
+    function renderLines(){
+      linesList.innerHTML=scenesData.map(s=>`
+        <article class="line-card" data-id="${s.id}">
+          <img src="${s.img}" alt="${s.ko}">
+          <div class="line-body">
+            <div class="row1"><span class="name">${s.ko}</span></div>
+            <div class="langs">
+              <div><span class="tag">KO</span>${s.ko}</div>
+              <div><span class="tag">EN</span>${s.en}</div>
+              <div><span class="tag">JP</span>${s.ja}</div>
+            </div>
+            <div class="actions">
+              <button class="btn speak" data-lang="ko">Speak KO</button>
+              <button class="btn speak" data-lang="en">Speak EN</button>
+              <button class="btn speak" data-lang="ja">Speak JP</button>
+            </div>
           </div>
-        </div>
-      </article>`).join('');
+        </article>`).join('');
+    }
+    renderScenes();
+    renderLines();
 
     /* ---------- Tabs ---------- */
     const tabs=document.querySelectorAll('.tab');
@@ -303,7 +291,7 @@
     }
     tabs.forEach(t=> t.addEventListener('click',()=>activateTab(t.dataset.tab)));
 
-    /* ---------- Video sound toggle ---------- */
+    /* ---------- Video Sound Toggle ---------- */
     const hero=document.getElementById('hero');
     const soundToggle=document.getElementById('soundToggle');
     let soundOn=true;
@@ -314,7 +302,7 @@
       if(hero){ hero.muted=!soundOn; try{ if(soundOn) hero.play(); }catch(_){}} 
     });
 
-    /* ---------- Web Speech TTS ---------- */
+    /* ---------- Web Speech API (TTS) ---------- */
     const ttsToggle=document.getElementById('ttsToggle');
     let ttsOn=true;
     ttsToggle.addEventListener('click',()=>{
@@ -323,6 +311,7 @@
       ttsToggle.setAttribute('aria-pressed', String(ttsOn));
       if(!ttsOn){ try{ speechSynthesis.cancel(); }catch(_){} }
     });
+
     function speak(text, lang, onend){
       if(!ttsOn || !text) return;
       const u=new SpeechSynthesisUtterance(text);
@@ -341,18 +330,17 @@
     linesList.addEventListener('click',e=>{
       const b=e.target.closest('.speak'); if(!b) return;
       const wrap=e.target.closest('.line-card'); const id=wrap.dataset.id;
-      const s=scenes.find(x=>x.id===id);
+      const s=scenesData.find(x=>x.id===id);
       const lang=b.dataset.lang;
       const txt=lang==='ko'?s.ko:lang==='en'?s.en:s.ja;
       speak(txt, lang);
     });
 
     // Play All
-    const playAllBtns=document.querySelectorAll('.playall');
-    playAllBtns.forEach(btn=>{
+    document.querySelectorAll('.playall').forEach(btn=>{
       btn.addEventListener('click',()=>{
         const lang=btn.dataset.lang;
-        const texts=scenes.map(s=> lang==='ko'?s.ko:lang==='en'?s.en:s.ja);
+        const texts=scenesData.map(s=> lang==='ko'?s.ko:lang==='en'?s.en:s.ja);
         let i=0;
         const next=()=>{ if(i<texts.length){ speak(texts[i++], lang, next); } };
         next();
@@ -360,24 +348,36 @@
     });
     document.getElementById('stopAll').addEventListener('click',()=>{ try{ speechSynthesis.cancel(); }catch(_){} });
 
-    /* ---------- Pizza chooser ---------- */
+    /* ---------- Pizza chooser (깜빡임 없이 열기) ---------- */
+    const splash=document.getElementById('splash');
+    const app=document.getElementById('app');
     const box=document.getElementById('box');
-    const boxClose=document.getElementById('boxClose');
-    const remember=document.getElementById('remember');
+    const reopenBtn=document.getElementById('reopenBtn');
 
-    function openBox(force=false){
-      if(!force && localStorage.getItem('st_skip_box')==='1') return;
+    // 즉시 열기: 전환 끄고 바로 보이게
+    function openBoxImmediate(){
+      document.body.classList.add('overlay-open');
+      box.classList.add('immediate');  // transition 끔
+      box.classList.add('open');
+      box.setAttribute('aria-hidden','false');
+      const firstPizza=box.querySelector('.pizza'); if(firstPizza) firstPizza.focus();
+      // 다음 프레임에서 transition 복구
+      requestAnimationFrame(()=> box.classList.remove('immediate'));
+    }
+    function openBox(){
+      document.body.classList.add('overlay-open');
       box.classList.add('open');
       box.setAttribute('aria-hidden','false');
       const firstPizza=box.querySelector('.pizza'); if(firstPizza) firstPizza.focus();
     }
-    function openBoxIfNeeded(){ openBox(false); }
     function closeBox(){
       box.classList.remove('open');
       box.setAttribute('aria-hidden','true');
-      if(remember.checked) localStorage.setItem('st_skip_box','1');
+      document.body.classList.remove('overlay-open');
     }
-    boxClose.addEventListener('click', closeBox);
+    function goPizza(tabId){ activateTab(tabId); closeBox(); }
+
+    // 배경 클릭/ESC
     box.addEventListener('click', e=>{ if(e.target===box) closeBox(); });
     box.addEventListener('keydown', e=>{
       if(e.key==='Escape') closeBox();
@@ -385,13 +385,22 @@
         goPizza(document.activeElement.getAttribute('data-go'));
       }
     });
+    // 타일 클릭
     box.querySelectorAll('.pizza').forEach(p=>{
       p.addEventListener('click', ()=> goPizza(p.getAttribute('data-go')));
     });
-    function goPizza(tabId){ activateTab(tabId); closeBox(); }
 
-    // Reopen button
-    reopenBtn.addEventListener('click', ()=> openBox(true));
+    // 재열기 버튼
+    reopenBtn.addEventListener('click', ()=> openBox());
+
+    // 시작: 앱 먼저 표시 + 오버레이 즉시 열기 → 그 다음 스플래시 페이드
+    document.getElementById('start').addEventListener('click',()=>{
+      app.style.display='block';          // 배경 앱 먼저 보이게
+      openBoxImmediate();                 // 오버레이를 즉시 불투명하게
+      reopenBtn.style.display='flex';     // 재열기 버튼도 켜둠
+      splash.classList.add('fade');       // 이제 스플래시를 부드럽게 제거
+      setTimeout(()=>{ splash.remove(); }, 520);
+    });
   </script>
 </body>
 </html>
