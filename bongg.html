@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shaking Tokyo — Cards</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --red:#ab1e22;
+      --card:rgba(255,255,255,.06);
+      --card2:rgba(255,255,255,.12);
+      --bd:rgba(255,255,255,.10);
+      --shadow:0 8px 24px rgba(0,0,0,.45);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:#000;color:#fff;font-family:"Noto Sans KR",system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+
+    /* Splash */
+    #splash{position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;z-index:1000;transition:opacity .5s ease}
+    #splash img{width:min(42vw,240px);height:auto;cursor:pointer;transition:transform .25s}
+    #splash img:hover{transform:scale(1.04)}
+    #splash.fade{opacity:0;pointer-events:none}
+
+    /* Appbar */
+    header.appbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;padding:12px 16px;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);border-bottom:1px solid var(--bd)}
+    #title{margin:0;font-size:1.45rem;color:var(--red);font-family:"IBM Plex Mono",monospace;font-weight:700;text-transform:lowercase;text-shadow:0 4px 8px rgba(171,30,34,.35);user-select:none}
+    #title .ch{display:inline-block;transform-origin:center bottom}
+    @keyframes shakeLetterVerticalSlow{
+      0%,100%{transform:translateY(0) rotate(0deg)}
+      10%{transform:translateY(-3px) rotate(-2deg)}
+      20%{transform:translateY(3px) rotate(2deg)}
+      30%{transform:translateY(-2px) rotate(-1.5deg)}
+      40%{transform:translateY(2px) rotate(1.5deg)}
+      50%{transform:translateY(-1.5px) rotate(-1deg)}
+      60%{transform:translateY(1.5px) rotate(1deg)}
+      70%{transform:translateY(-1px) rotate(-.8deg)}
+      80%{transform:translateY(1px) rotate(.8deg)}
+      90%{transform:translateY(0) rotate(.3deg)}
+    }
+    #title.wobble .ch{animation:shakeLetterVerticalSlow 3.8s ease-in-out infinite;animation-delay:calc(var(--i)*80ms)}
+    .spacer{flex:1}
+    .btn{border:1px solid var(--bd);background:transparent;color:#fff;border-radius:999px;padding:8px 12px;font-size:.9rem;cursor:pointer;transition:.2s}
+    .btn:hover{background:rgba(255,255,255,.10);transform:translateY(-1px)}
+    .btn.is-on{background:rgba(171,30,34,.35);border-color:var(--red)}
+
+    main{max-width:1080px;margin:0 auto;padding:16px}
+
+    /* Tabs */
+    .tabs{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .tab{border:1px solid var(--bd);background:#0e0e0e;color:#eee;padding:10px 0;border-radius:12px;cursor:pointer;transition:.18s;font-weight:600}
+    .tab.active{background:var(--red);border-color:var(--red)}
+    .tab:hover{filter:brightness(1.15)}
+    .panel{display:none;margin-top:14px}
+    .panel.active{display:block}
+
+    /* Scenes */
+    .video-wrap{margin-bottom:14px}
+    .video-wrap video{width:100%;display:block;border-radius:14px;border:1px solid var(--bd);box-shadow:var(--shadow);background:#000}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width:960px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.grid{grid-template-columns:1fr}}
+    .card{background:var(--card);border:1px solid var(--bd);border-radius:14px;overflow:hidden;cursor:pointer;transition:.2s}
+    .card:hover{transform:translateY(-2px);background:var(--card2)}
+    .card img{width:100%;display:block;aspect-ratio:16/9;object-fit:cover;background:#111}
+    .meta{padding:12px}
+    .title{margin:0;color:var(--red);font-weight:700}
+    .langline{margin:6px 0 0;color:#ddd;opacity:.95}
+    .langline .tag{margin-right:6px;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);font-size:.68rem;font-weight:700}
+
+    /* Lines */
+    .line-card{display:grid;grid-template-columns:240px 1fr;gap:14px;background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;align-items:start}
+    .line-card + .line-card{margin-top:12px}
+    .line-card img{width:100%;height:auto;border-radius:10px;display:block;aspect-ratio:16/9;object-fit:cover;background:#111}
+    .line-body .row1{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+    .line-body .name{font-weight:700;color:var(--red)}
+    .line-body .langs{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+    .tag{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.22);font-size:.68rem;font-weight:700;margin-right:6px}
+    .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    @media (max-width:720px){
+      .line-card{grid-template-columns:1fr}
+    }
+
+    /* About */
+    .about .block{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px}
+    .about hr{border:none;height:1px;background:var(--bd);margin:12px 0}
+
+    /* Pizza chooser overlay */
+    #box{
+      position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);
+      display:flex;align-items:center;justify-content:center;z-index:900;
+      opacity:0;pointer-events:none;transition:opacity .6s ease;
+    }
+    #box.open{opacity:1;pointer-events:auto}
+    .box-inner{
+      background:#0d0d0d;border:1px solid var(--bd);border-radius:18px;box-shadow:var(--shadow);
+      width:min(1000px,96vw);padding:20px;
+      transform-origin:top center;transform:scale(.8) rotateX(90deg);
+      opacity:0;transition:transform .8s cubic-bezier(.23,1,.32,1), opacity .6s ease;
+    }
+    #box.open .box-inner{transform:scale(1) rotateX(0);opacity:1}
+    .box-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .box-head h2{margin:0;font-size:1.1rem}
+    .shake-title{animation:boxShake 1.5s ease forwards;transform-origin:center;display:inline-block}
+    @keyframes boxShake{
+      0%{transform:scale(.9) rotate(0deg);opacity:0}
+      20%{transform:scale(1.05) rotate(2deg);opacity:1}
+      40%{transform:scale(1) rotate(-2deg)}
+      60%{transform:scale(1.03) rotate(1deg)}
+      80%{transform:scale(1) rotate(0deg)}
+      100%{transform:scale(1);opacity:1}
+    }
+    .pizza-grid{display:grid;grid-template-columns:repeat(3, minmax(260px, 1fr));gap:16px}
+    @media (max-width:760px){.pizza-grid{grid-template-columns:1fr}}
+    .pizza{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:18px;cursor:pointer;transition:.18s;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;text-align:center}
+    .pizza:hover{background:var(--card2);transform:translateY(-1px)}
+    .pizza .name{font-weight:700}
+    .pizza-img{width:100%;aspect-ratio:1/1;object-fit:contain;background:transparent;border-radius:12px;display:block}
+    .box-foot{display:flex;justify-content:flex-end;margin-top:12px}
+
+    /* Reopen (←) button */
+    #reopenBtn{
+      position:fixed;left:16px;bottom:16px;z-index:850;
+      width:46px;height:46px;border-radius:50%;
+      display:none;align-items:center;justify-content:center;
+      border:1px solid var(--bd);background:rgba(0,0,0,.6);backdrop-filter:blur(6px);
+      color:#fff;font-size:20px;cursor:pointer;transition:transform .15s ease, background .2s ease;
+    }
+    #reopenBtn:hover{transform:translateY(-1px);background:rgba(255,255,255,.08)}
+  </style>
+</head>
+<body>
+  <!-- Splash -->
+  <div id="splash"><img id="start" src="shakingtokyo-icon.png" alt="Start Shaking Tokyo"></div>
+
+  <!-- App -->
+  <div id="app" style="display:none">
+    <header class="appbar">
+      <h1 id="title">shaking tokyo!</h1>
+      <div class="spacer"></div>
+      <button id="soundToggle" class="btn is-on" aria-pressed="true">Sound On</button>
+      <button id="ttsToggle" class="btn is-on" aria-pressed="true">TTS On</button>
+    </header>
+
+    <main>
+      <!-- tabs: About first -->
+      <nav class="tabs" role="tablist" aria-label="Main menu">
+        <button class="tab active" data-tab="about" role="tab" aria-selected="true">About</button>
+        <button class="tab" data-tab="scenes" role="tab" aria-selected="false">Scenes</button>
+        <button class="tab" data-tab="lines" role="tab" aria-selected="false">Lines</button>
+      </nav>
+
+      <!-- About (initial) -->
+      <section id="about" class="panel about active" role="tabpanel">
+        <div class="block">
+          <p><strong>한국어</strong></p>
+          <p>이 도시는 멈춘 듯이 흔들린다.<br>
+          10년 동안 문 밖을 나가지 않았다. 피자 박스를 탑처럼 쌓고, 전화기 너머의 목소리로 세상을 대신했다.<br>
+          매주 같은 피자, 같은 토요일, 같은 침묵.<br>
+          그러나 어느 날, 배달원과 눈이 마주쳤다. 그리고 세상은 미세하게 흔들렸다.<br>
+          작은 진동이 집을, 마음을, 시간을 흔든다. 문 밖은 여전히 낯설지만, 그는 걸음을 내딛는다.<br>
+          누군가 그의 고요 속으로 들어왔기 때문이다.</p>
+          <hr>
+          <p><strong>English</strong></p>
+          <p>The city trembles as if it has stopped.<br>
+          For ten years, he never stepped outside. Pizza boxes rose like towers, and voices on the phone replaced the world.<br>
+          Every Saturday repeated the same silence. One day, his eyes met the delivery girl’s—and the world shook, just slightly.<br>
+          The vibration reached his heart, unsettling the dust of years. The outside is still unfamiliar, but he begins to walk,<br>
+          because someone has entered his silence.</p>
+          <hr>
+          <p><strong>日本語</strong></p>
+          <p>この街は、止まったまま震えている。十年間、外に出ることはなかった。ピザの箱を積み上げ、電話の向こうの声だけが世界だった。<br>
+          ある日、配達員と目が合い、世界はかすかに揺れた。その小さな震えが、部屋も心も時間も揺らす。<br>
+          外はまだ怖い。それでも彼は歩き出す。誰かが彼の沈黙に入ってきたから。</p>
+        </div>
+      </section>
+
+      <!-- Scenes -->
+      <section id="scenes" class="panel" role="tabpanel">
+        <div class="video-wrap">
+          <video id="hero" autoplay muted loop playsinline controls>
+            <source src="videoplayback.mp4" type="video/mp4">
+          </video>
+        </div>
+        <div id="grid" class="grid"></div>
+      </section>
+
+      <!-- Lines -->
+      <section id="lines" class="panel" role="tabpanel">
+        <div class="actions" style="margin-bottom:10px">
+          <button class="btn playall" data-lang="ko">Play All (KO)</button>
+          <button class="btn playall" data-lang="en">Play All (EN)</button>
+          <button class="btn playall" data-lang="ja">Play All (JP)</button>
+          <button id="stopAll" class="btn">Stop</button>
+        </div>
+        <div id="linesList"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Pizza chooser (ORDER: About → Scenes → Lines) -->
+  <div id="box" aria-hidden="true">
+    <div class="box-inner" role="dialog" aria-modal="true" aria-labelledby="boxTitle">
+      <div class="box-head">
+        <h2 id="boxTitle" class="shake-title">The box is open. Pick one to begin!</h2>
+        <div class="spacer"></div>
+        <button id="boxClose" class="btn">Close</button>
+      </div>
+      <div class="pizza-grid">
+        <div class="pizza" data-go="about" tabindex="0" role="button" aria-label="About">
+          <img class="pizza-img" src="pizza-a.png" alt="About Pizza">
+          <div class="name">About</div>
+        </div>
+        <div class="pizza" data-go="scenes" tabindex="0" role="button" aria-label="Scenes">
+          <img class="pizza-img" src="pizza-s.png" alt="Scenes Pizza">
+          <div class="name">Scenes</div>
+        </div>
+        <div class="pizza" data-go="lines" tabindex="0" role="button" aria-label="Lines">
+          <img class="pizza-img" src="pizza-l.png" alt="Lines Pizza">
+          <div class="name">Lines</div>
+        </div>
+      </div>
+      <div class="box-foot">
+        <label style="display:flex;align-items:center;gap:8px;opacity:.9">
+          <input id="remember" type="checkbox"> Don’t show this again
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reopen floating button -->
+  <button id="reopenBtn" title="Choose again" aria-label="Choose again (open pizza box)">←</button>
+
+  <script>
+    /* ---------- Splash → App ---------- */
+    const splash=document.getElementById('splash');
+    const app=document.getElementById('app');
+    const reopenBtn=document.getElementById('reopenBtn');
+    document.getElementById('start').addEventListener('click',()=>{
+      splash.classList.add('fade');
+      setTimeout(()=>{ splash.remove(); app.style.display='block'; reopenBtn.style.display='flex'; openBoxIfNeeded(); },500);
+    });
+
+    /* ---------- Title wobble ---------- */
+    const title=document.getElementById('title');
+    title.innerHTML=[...title.textContent].map((ch,i)=>`<span class="ch" style="--i:${i}">${ch===' ' ? '&nbsp;' : ch}</span>`).join('');
+    title.classList.add('wobble');
+
+    /* ---------- Data ---------- */
+    const scenes = [
+      {id:'hikikomori', img:'scene-hikikomori.png', ko:'나는 히키코모리다.', en:'I am a hikikomori.', ja:'私は引きこもりです。'},
+      {id:'tenyears', img:'scene-10years.png', ko:'이것이 사라지기 전까지 10년.', en:'Ten years until this disappears.', ja:'これが消えるまでの10年。'},
+      {id:'pizza', img:'scene-pizza.png', ko:'매주 토요일에는 피자를 먹는다.', en:'Every Saturday, I eat pizza.', ja:'毎週土曜日はピザを食べる。'},
+      {id:'objects', img:'scene-objects.png', ko:'사물이 사람을 대체한다.', en:'Objects replace people.', ja:'物が人を置き換える。'},
+      {id:'eyes', img:'scene-eyes.png', ko:'11년 만에 눈이 마주쳤다.', en:'Our eyes met for the first time in eleven years.', ja:'11年ぶりに目が合った。'},
+      {id:'sorry', img:'scene-sorry.png', ko:'죄송합니다 실수로 잘못 눌렀어요.', en:'Sorry, I pressed it by mistake.', ja:'すみません、間違えて押しました。'},
+      {id:'meet', img:'scene-meet.png', ko:'히키코모리가 히키코모리를 만난다.', en:'A hikikomori meets another hikikomori.', ja:'引きこもりが引きこもりに出会う。'}
+    ];
+
+    /* ---------- Build Scenes grid ---------- */
+    const grid=document.getElementById('grid');
+    grid.innerHTML=scenes.map(s=>`
+      <article class="card" data-id="${s.id}">
+        <img src="${s.img}" alt="${s.ko}">
+        <div class="meta">
+          <h3 class="title">${s.ko}</h3>
+          <p class="langline"><span class="tag">EN</span>${s.en}</p>
+          <p class="langline"><span class="tag">JP</span>${s.ja}</p>
+        </div>
+      </article>`).join('');
+
+    /* ---------- Build Lines list ---------- */
+    const linesList=document.getElementById('linesList');
+    linesList.innerHTML=scenes.map(s=>`
+      <article class="line-card" data-id="${s.id}">
+        <img src="${s.img}" alt="${s.ko}">
+        <div class="line-body">
+          <div class="row1"><span class="name">${s.ko}</span></div>
+          <div class="langs">
+            <div><span class="tag">KO</span>${s.ko}</div>
+            <div><span class="tag">EN</span>${s.en}</div>
+            <div><span class="tag">JP</span>${s.ja}</div>
+          </div>
+          <div class="actions">
+            <button class="btn speak" data-lang="ko">Speak KO</button>
+            <button class="btn speak" data-lang="en">Speak EN</button>
+            <button class="btn speak" data-lang="ja">Speak JP</button>
+          </div>
+        </div>
+      </article>`).join('');
+
+    /* ---------- Tabs ---------- */
+    const tabs=document.querySelectorAll('.tab');
+    const panels=document.querySelectorAll('.panel');
+    function activateTab(id){
+      tabs.forEach(x=>{x.classList.remove('active');x.setAttribute('aria-selected','false')});
+      panels.forEach(p=>p.classList.remove('active'));
+      const btn=[...tabs].find(b=>b.dataset.tab===id);
+      const panel=document.getElementById(id);
+      if(btn){ btn.classList.add('active'); btn.setAttribute('aria-selected','true'); }
+      if(panel){ panel.classList.add('active'); }
+    }
+    tabs.forEach(t=> t.addEventListener('click',()=>activateTab(t.dataset.tab)));
+
+    /* ---------- Video sound toggle ---------- */
+    const hero=document.getElementById('hero');
+    const soundToggle=document.getElementById('soundToggle');
+    let soundOn=true;
+    soundToggle.addEventListener('click',()=>{
+      soundOn=!soundOn; soundToggle.classList.toggle('is-on',soundOn);
+      soundToggle.textContent=soundOn?'Sound On':'Sound Off';
+      soundToggle.setAttribute('aria-pressed', String(soundOn));
+      if(hero){ hero.muted=!soundOn; try{ if(soundOn) hero.play(); }catch(_){}} 
+    });
+
+    /* ---------- Web Speech TTS ---------- */
+    const ttsToggle=document.getElementById('ttsToggle');
+    let ttsOn=true;
+    ttsToggle.addEventListener('click',()=>{
+      ttsOn=!ttsOn; ttsToggle.classList.toggle('is-on', ttsOn);
+      ttsToggle.textContent=ttsOn?'TTS On':'TTS Off';
+      ttsToggle.setAttribute('aria-pressed', String(ttsOn));
+      if(!ttsOn){ try{ speechSynthesis.cancel(); }catch(_){} }
+    });
+    function speak(text, lang, onend){
+      if(!ttsOn || !text) return;
+      const u=new SpeechSynthesisUtterance(text);
+      const code=lang==='ko'?'ko-KR':lang==='en'?'en-US':'ja-JP';
+      const voices=speechSynthesis.getVoices();
+      let v=voices.find(v=> (v.lang||'').toLowerCase()===code.toLowerCase());
+      if(!v){ const base=code.split('-')[0]; v=voices.find(v=> (v.lang||'').toLowerCase().startsWith(base)); }
+      if(v) u.voice=v; u.lang=code; u.rate=1; u.pitch=1; u.volume=1;
+      if(onend) u.onend=onend;
+      try{ speechSynthesis.cancel(); }catch(_){}
+      speechSynthesis.speak(u);
+    }
+    document.addEventListener('click',()=>{ try{ speechSynthesis.resume(); }catch(_){} }, {once:true});
+
+    // Individual Speak
+    linesList.addEventListener('click',e=>{
+      const b=e.target.closest('.speak'); if(!b) return;
+      const wrap=e.target.closest('.line-card'); const id=wrap.dataset.id;
+      const s=scenes.find(x=>x.id===id);
+      const lang=b.dataset.lang;
+      const txt=lang==='ko'?s.ko:lang==='en'?s.en:s.ja;
+      speak(txt, lang);
+    });
+
+    // Play All
+    const playAllBtns=document.querySelectorAll('.playall');
+    playAllBtns.forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const lang=btn.dataset.lang;
+        const texts=scenes.map(s=> lang==='ko'?s.ko:lang==='en'?s.en:s.ja);
+        let i=0;
+        const next=()=>{ if(i<texts.length){ speak(texts[i++], lang, next); } };
+        next();
+      });
+    });
+    document.getElementById('stopAll').addEventListener('click',()=>{ try{ speechSynthesis.cancel(); }catch(_){} });
+
+    /* ---------- Pizza chooser ---------- */
+    const box=document.getElementById('box');
+    const boxClose=document.getElementById('boxClose');
+    const remember=document.getElementById('remember');
+
+    function openBox(force=false){
+      if(!force && localStorage.getItem('st_skip_box')==='1') return;
+      box.classList.add('open');
+      box.setAttribute('aria-hidden','false');
+      const firstPizza=box.querySelector('.pizza'); if(firstPizza) firstPizza.focus();
+    }
+    function openBoxIfNeeded(){ openBox(false); }
+    function closeBox(){
+      box.classList.remove('open');
+      box.setAttribute('aria-hidden','true');
+      if(remember.checked) localStorage.setItem('st_skip_box','1');
+    }
+    boxClose.addEventListener('click', closeBox);
+    box.addEventListener('click', e=>{ if(e.target===box) closeBox(); });
+    box.addEventListener('keydown', e=>{
+      if(e.key==='Escape') closeBox();
+      if(e.key==='Enter' && document.activeElement?.classList.contains('pizza')){
+        goPizza(document.activeElement.getAttribute('data-go'));
+      }
+    });
+    box.querySelectorAll('.pizza').forEach(p=>{
+      p.addEventListener('click', ()=> goPizza(p.getAttribute('data-go')));
+    });
+    function goPizza(tabId){ activateTab(tabId); closeBox(); }
+
+    // Reopen button
+    reopenBtn.addEventListener('click', ()=> openBox(true));
+  </script>
+</body>
+</html>
